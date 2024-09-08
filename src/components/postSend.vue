@@ -8,21 +8,32 @@
     </div>
 
     <div>
-        <el-radio v-model="radio" label="1" @click="chooseType('1')">初试经验</el-radio>
-        <el-radio v-model="radio" label="2" @click="chooseType('2')">复试经验</el-radio>
+        <el-radio v-model="radio" label="1">初试经验</el-radio>
+        <el-radio v-model="radio" label="2">复试经验</el-radio>
     </div>
 
-    <div class="form-group">
-      <label for="file">附件</label>
-      <input type="file" id="file" @change="onFileChange">
-      <span v-if="selectedFile">{{ selectedFile.name }}</span>
-    </div>
+    <el-upload
+      ref="upload"
+      class="upload-demo"
+      :headers="postIdInfo"
+      action="http://localhost:7777/fileUpLoad"
+      :on-preview="handlePreview"
+      :on-remove="handleRemove"
+      :before-remove="beforeRemove"
+      multiple
+      :limit="3"
+      :on-exceed="handleExceed"
+      :file-list="fileList"
+      :auto-upload="false">
+      <el-button size="small" type="primary">点击上传</el-button>
+      <div slot="tip" class="el-upload__tip">文件不能超过50Mb</div>
+    </el-upload>
 
     <div style="height: 425px; overflow: auto">
       <quill-editor
         ref="myQuillEditor"
         v-model="content"
-        :options="editorOption"
+        :options="editorOptions"
         @blur="onEditorBlur($event)"
         @focus="onEditorFocus($event)"
         @change="onEditorChange($event)"
@@ -38,6 +49,7 @@
 <script>
 import { quillEditor } from 'vue-quill-editor'
 import 'quill/dist/quill.snow.css'
+import {submitPost} from "../api/post";
 
 export default {
   components: {
@@ -49,7 +61,9 @@ export default {
       content: '',
       editorOptions: { theme: 'snow' }, // Quill.js配置
       selectedFile: null,
-      radio: '1'
+      radio: '1',
+      fileList:[],
+      postIdInfo:{postId:''}
     }
   },
   methods: {
@@ -57,18 +71,51 @@ export default {
     //   this.selectedFile = e.target.files[0];
     // },
     submitPost() {
-      // 实现提交帖子的逻辑，包括调用API发送数据
-      console.log('提交帖子', this.title, this.content, this.selectedFile);
       // 注意：实际应用中需要处理文件上传逻辑
-    },
-    chooseType: function(type){
-      this.radio = type;
+      const userInfo = JSON.parse( localStorage.getItem('userInfo'));
+      const userId = userInfo.userId
+
+      submitPost(this.title,userId,this.radio, null,this.content).then((response)=>{
+        const postId = response;
+        console.log(postId)
+        this.postIdInfo.postId = postId
+        console.log('发送帖子成功');
+        this.$refs.upload.submit();
+      });
+
+
+
     },
     handleChange(value) {
       console.log('选中的值为:', value);
       // 在这里处理变化后的逻辑
-    }
 
+
+    },
+    onEditorBlur(){
+
+    },
+    onEditorFocus(){
+
+    },
+    onEditorChange(){
+
+    },
+    onFileChange(){
+
+    },
+    handleRemove(file, fileList) {
+      console.log(file, fileList);
+    },
+    handlePreview(file) {
+      console.log(file);
+    },
+    handleExceed(files, fileList) {
+      this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+    },
+    beforeRemove(file, fileList) {
+      return this.$confirm(`确定移除 ${ file.name }？`);
+    },
   }
 }
 </script>

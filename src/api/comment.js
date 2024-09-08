@@ -9,11 +9,11 @@ export function getComments(postId){
 }
 
 // 发送文章评论
-export function sendComment(type,postId,rootId,toCommentId,content) {
+export function sendComment(type,postId,rootId,toCommentId,content,userId) {
     return request({
         url: '/addComment',
         method: 'post',
-        data: {"postId":postId,"type":type,"rootId":rootId,"toCommentId":toCommentId,"content":content}
+        data: {"postId":postId,"type":type,"rootId":rootId,"toCommentId":toCommentId,"content":content,"userId":userId}
     })
 }
 

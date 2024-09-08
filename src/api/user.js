@@ -12,14 +12,14 @@ export function userLogin(phone,password) {
     })
 }
 
-export function userRegister(username,nickName,email,password) {
+export function userRegister(username,nickName,phone,password) {
     return request({
         url: '/user/register',
         method: 'post',
         headers: {
             isToken :false
         },
-        data: {"username":username,"nickName":nickName,"email":email,"password":password}
+        data: {"username":username,"nickName":nickName,"phone":phone,"password":password}
     })
 }
 

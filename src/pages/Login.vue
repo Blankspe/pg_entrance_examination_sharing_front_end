@@ -3,7 +3,7 @@
     <div>
         <div class="container">
             <h1 class="loginTitle">
-                
+
             </h1>
             <!-- 登录注册 -->
             <div v-show="!err2005" class="">
@@ -22,7 +22,7 @@
                     </el-alert>
                     <el-input
                         type="text"
-                        placeholder="用户名"
+                        placeholder="手机号"
                         v-model="username">
                     </el-input>
 
@@ -72,7 +72,7 @@
                     </el-input>
                     <el-input
                         type="email"
-                        placeholder="邮箱"
+                        placeholder="手机号/邮箱"
                         v-model="nemail">
                     </el-input>
                     <el-alert
@@ -88,7 +88,7 @@
                     </el-input>
                     <el-alert
                         v-show="npasswordErr"
-                        title="密码错误"
+                        title="密码格式错误"
                         type="error"
                         show-icon  :closable="false">
                     </el-alert>
@@ -167,7 +167,7 @@ import {setToken} from '../utils/auth.js'
                         this.$router.push({path:'/'});
                     }
                 })
-      
+
             },
             registerEnterFun: function(e){
                 var keyCode = window.event? e.keyCode:e.which;

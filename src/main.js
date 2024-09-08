@@ -8,10 +8,13 @@ import 'element-ui/lib/theme-default/index.css'
 import './assets/css/style.less'
 import store from './store'
 import MavonEditor from 'mavon-editor'
+import { BootstrapVue } from 'bootstrap-vue';
+
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 Vue.use(MavonEditor)
+Vue.use(BootstrapVue)
 
 /* eslint-disable no-new */
 new Vue({

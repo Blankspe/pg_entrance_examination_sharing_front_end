@@ -9,3 +9,13 @@ export function getSchools(){
         }
     })
 }
+export function getSchoolByInfo(diqu,shuxing,leixing,xingzhi){
+  return request({
+    url: 'getSchoolByInfo',
+    method: 'post',
+    headers: {
+      isToken: false
+    },
+    data:{'diqu':diqu,'shuxing':shuxing,'leixing':leixing,'xingzhi':xingzhi}
+  })
+}

@@ -34,3 +34,20 @@ export function likePost(postId,type){
 
   })
 }
+
+export function submitPost(title,userId,type,subjects,contents){
+  return request({
+    url: 'addPost',
+    method: 'post',
+    headers: {
+      isToken:false
+    },
+    data:{
+      'title':title,
+      'userId':userId,
+      'type':type,
+      'subjects':subjects,
+      'contents':contents
+    }
+  })
+}

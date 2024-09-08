@@ -12,12 +12,12 @@
 							<template slot="title"><i class="fa fa-wa fa-archive"></i> 分类</template>
 							<el-menu-item v-for="(item,index) in classListObj" :key="'class1'+index" :index="'/Search?classId='+item.id" @click="turnToSearch(item.tagId)">{{item.tagName}}</el-menu-item>
 						</el-submenu>
-						<!-- <el-menu-item index="/Reward"><i class="fa fa-wa fa-cny"></i> 赞赏</el-menu-item> -->
 						<el-menu-item index="/School"> 院校</el-menu-item>
 						<el-menu-item index="/Reward"> 政策</el-menu-item>
-						<!-- <el-menu-item index="/Friendslink"><i class="fa fa-wa fa-users"></i>友链</el-menu-item> -->
-						<input class="searchbox" placeholder="请输入要搜索的内容" v-model="inputbox">
-						<div @click="mohusearch" class="search">搜索</div>
+<!--						<input class="searchbox" placeholder="请输入要搜索的内容" v-model="inputbox">-->
+            <el-input v-model="inputbox" placeholder="请输入要搜索的内容" style="width: 200px"></el-input>
+            <el-button type="primary" @click="mohusearch">搜索</el-button>
+<!--						<div @click="mohusearch" class="search">搜索</div>-->
 						<div class="userInfo">
 							<div v-show="!haslogin" class="nologin">
 								<a href="javascript:void(0);" @click="logoinFun(1)">登录&nbsp;</a>|<a href="javascript:void(0);" @click="logoinFun(0)">&nbsp;注册</a>
@@ -34,6 +34,9 @@
 									<li>
 										<a href="javascript:void(0);" @click="postSend">发布帖子</a>
 									</li>
+                  <li>
+                    <a href="javascript:void(0);" @click="sendMessage">发送消息</a>
+                  </li>
 								</ul>
 							</div>
 						</div>
@@ -130,6 +133,11 @@ export default {
         'PostSend'
       );
 		},
+    sendMessage:function(){
+      this.$router.push(
+        'SendMessage'
+      );
+    },
 		// 用户退出登录
 		userlogout: function() {
 			var that = this;
@@ -229,7 +237,7 @@ export default {
 		}
 		document.addEventListener(visibilityChangeEvent, onVisibilityChange);
 		// console.log();
-		// this.routeChange();
+		this.routeChange();
 
 
 	},
@@ -246,20 +254,24 @@ export default {
 <style>
 /*********头部导航栏********/
 
-/*头部导航栏盒子*/
+/*头部导航栏盒
+子*/
 .search{
 	position: absolute;
 	top: 9px;
 	background: white;
 	padding: 10px;
 	border-radius: 5px;
-	height: 10px;
+	height: 8px;
 	cursor: pointer;
 	width: 40px;
-	left: 74%;
+	left: 550px;
 	text-align: center;
+  align-items: center;
+  padding-bottom: 10px;
 }
 .searchbox{
+  position: relative;
 	margin: 10px;
 	height: 20px;
 }

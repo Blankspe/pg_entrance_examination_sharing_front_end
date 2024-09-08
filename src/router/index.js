@@ -116,6 +116,14 @@ export default new Router({
 				auth: true
 			},
 			name: "PostSend"
-		}
+		},
+    {
+      path: '/SendMessage',
+      component: resolve => require(['../pages/SendMessage.vue'],resolve),
+      meta:{
+        auth: true
+      },
+      name: "SendMessage"
+    }
 	]
 })

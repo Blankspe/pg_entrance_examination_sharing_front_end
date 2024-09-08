@@ -1,112 +1,284 @@
 <template>
   <div class="box">
-    <div class="outbox" v-show="isShow">
-    </div>
-    <div class="float" v-show="isShow">
+    <div v-if="isSendMessage">
+      <div class="outbox" >
+      </div>
+      <div class="floatMsg">
+        <div class = "sendMsg-title">发私信</div>
+        <div class="sendMsg-to">发给    </div>
+        <div class="sendMsg-name">{{ receiverInfo.userName }}</div>
+        <div class="sendMsg-content">内容</div>
+        <el-input v-model="msgInput" placeholder="请输入内容" class="sendMsg-input" @change="changeMessage"></el-input>
+        <el-button class="sendMsg-cancel" @click="closeMsgWindow">取消</el-button>
+        <el-button type="success" @click="sendMsg" class="sendMsg-send">发送</el-button>
 
-        <img :src="postToShow.profilePict" class="pictInDetail">
+        <div >
+          <div class="historyMsg-topic">
+            历史消息
+          </div>
+          <div v-if="receiverInfo!=null" class="historyMsg-topic">
+            {{receiverInfo.userName}}
+          </div>
+          <div v-if="historyMsg.length == 0"></div>
+          <div v-else v-for="(item,index) in historyMsg" :key="index" class="historyMsg-each">
+            <div v-if="senderId == item.senderId" >
+              <img :src='senderInfo.profilePict' class="pictInDetail-right">
+              <div class="historyMsg-i">
+                {{item.msg}}
+              </div>
+            </div>
+            <div v-else >
+              <img :src='receiverInfo.profilePict' class="pictInDetail-left">
+              <div class="historyMsg-else">
+                {{item.msg}}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div v-show="isShow">
+      <div class="outbox" >
+      </div>
+      <div class="float" >
+
+        <img :src='postToShow.profilePict' class="pictInDetail">
         <div class="nameInDetail" >{{postToShow.userName}} </div>
         <div class="schoolInDetail">本科院校：{{postToShow.school}} 目标院校：{{postToShow.targetSchool}} 总分：{{postToShow.allScore}} </div>
         <div class="titleInDetail">{{postToShow.title}} </div>
         <div class="contentNotHid">{{postToShow.contents}} </div>
-        <div class="allComments">
-            全部评论（ {{comments.length}} ）
+        <div v-if="file!=null" class="file">
+          <i v-if="file!=null" class="el-icon-document" @click="downLoadFile(file.path)"></i>
+          <div v-if="file!=null" class="file-name">{{file.originalName}}</div>
         </div>
-        <div>
-            <div v-for="item in comments" :key="item.commentId">
-                <img :src="item.profilePict" class="pictInDetail">
-                <div class="nameInDetail" >{{item.userName}} </div>
-                <div class="schoolInDetail">本科院校：{{item.school}} 目标院校：{{item.targetSchool}} 总分：{{item.allScore}} </div>
-                <div class="comment">{{item.content}}</div>
 
-                <hr style="opacity:0.2;margin-bottom:20px;" >
-            </div>
-            <input type="text" placeholder="请输入回复内容" v-model="reply">
-            <button @click="replyPost(null,postId,1,1,reply)">提交</button>
+        <div class="allComments">
+          全部评论( {{comments.length}} )
         </div>
+        <div >
+          <div v-if="comments.length !== 0">
+            <div v-for="(item,index) in comments" :key="index">
+              <img :src='item.profilePict' class="pictInDetail">
+              <div class="nameInDetail" >{{item.userName}} </div>
+              <div class="schoolInDetail">本科院校：{{item.school}} 目标院校：{{item.targetSchool}} 总分：{{item.allScore}} </div>
+              <div class="comment">{{item.content}}</div>
+
+              <hr style="opacity:0.2;margin-bottom:20px;" >
+            </div>
+          </div>
+          <div v-else class="allCommments">
+            <div>暂无评论</div>
+          </div>
+          <input type="text" placeholder="请输入回复内容" v-model="reply">
+          <button @click="replyPost(null,postId,1,1,reply)">提交</button>
+        </div>
+      </div>
+      <i class="fa fa-times-circle"  @click="close()"></i>
     </div>
-    <!-- <div class="closebutton" v-show="isShow" @click="close">
-        ×
-    </div> -->
-    <i class="fa fa-times-circle" v-show="isShow" @click="close"></i>
     <el-row v-for="(item,index) in postDetail" class="post" :key="item.postId">
-        <img :src="item.profilePict" class="pict">
+        <img :src="item.profilePict" class="pict" @click="isShowMessage(item.userId)">
         <div class="name">{{item.userName}} </div>
         <div class="schoolInpost">本科院校：{{item.school}} 目标院校：{{item.targetSchool}} 总分：{{item.allScore}} </div>
 
         <div class="title">{{item.title}} </div>
-        <div class="content" @click="toOther(index,item.postId)">{{item.contents}} </div>
-        <i class="fa fa-thumbs-up" @click="likePost(item.postId,index)" :class="{ 'like' : currentIndexs.includes(index) } " >点赞({{item.likes}})</i>
-        <i class="fa fa-comment" >评论</i>
+        <div class="content" @click="toPostDetail(index,item.postId)">{{item.contents}} </div>
+        <i class="fa fa-thumbs-up" @click="likePost(item.postId,index)" :class="{ 'like' : currentIndexs.includes(index) } " >点赞({{item.likes}})    </i>
+        <i class="fa fa-comment" >评论 </i>
         <i class="fa fa-share" >分享</i>
     </el-row>
+
+    <el-backtop target=".page-component__scroll .el-scrollbar__wrap"></el-backtop>
   </div>
 
 </template>
 
 <script>
+
+
 import {getPost, likePost} from '../api/post.js'
 import {getComments,sendComment} from '../api/comment.js'
+import {getFileByPostId} from '../api/file'
+import {getUserInfo} from '../api/user'
 export default {
-    data(){
-        return {
-          postDetail:[],
-          isShow: false,
-          postToShow:{},
-          comments:[],
-          postId:null,
-          reply:null,
-          currentIndexs:[]
+  data(){
+      return {
+        postDetail:[],
+        isShow: false,
+        postToShow:{},
+        comments:[],
+        postId:null,
+        reply:null,
+        currentIndexs:[],
+        isSendMessage:false,
+        msgInput:null,
+        file:null,
+        socket:null,
+        senderId:null,
+        receiverId:null,
+        backMsg:null,
+        historyMsg:[],
+        receiverInfo:null,
+        senderInfo:null
+      }
+  },
+  watch: {
 
-        }
+  },
+  methods:{
+    changeMessage(){
+      this.$forceUpdate();
     },
-    watch: {
-
-	  },
-    methods:{
-        likePost(postId,index){
-          likePost(postId,'1').then((response)=>{
-            if (response == true){
-              this.currentIndexs.push(index)
-            }
+    closeMsgWindow(){
+      this.isSendMessage = !this.isSendMessage;
+    },
+      likePost(postId,index){
+        likePost(postId,'1').then((response)=>{
+          if (response == true){
+            this.currentIndexs.push(index)
+          }
+        })
+      },
+      getPostDetail(){
+          getPost().then((response)=>{
+              this.postDetail = response
           })
-        },
-        getPostDetail(){
-            getPost().then((response)=>{
-                this.postDetail = response
-            })
-        },
-        toOther(index,postId){
-            this.isShow = !this.isShow;
-            this.postToShow = this.postDetail[index];
-            this.postId = postId;
-            this.getAllComments(postId);
-        },
-        close(){
-            this.isShow = !this.isShow
-        },
-        getAllComments(postId){
-            getComments(postId).then((response)=>{
-                this.comments = response;
-                this.$set(this.comments,this.comments.length,response[response.length-1])
-            })
-        },
-        replyPost(type,postId,rootId,toCommentId,content){
-            sendComment(null,postId,rootId,toCommentId,content);
-            this.getAllComments(postId);
-        },
-
+      },
+      toPostDetail(index, postId){
+          this.isShow = !this.isShow;
+          this.postToShow = this.postDetail[index];
+          this.postId = postId;
+          this.getAllComments(postId);
+          this.getFileByPostId(postId)
+      },
+    getFileByPostId(postId){
+        getFileByPostId(postId).then((response)=>{
+          this.file = response;
+        })
     },
-    components:{
+      close(){
+        this.isShow = !this.isShow
+        console.log('当前isShow的值为：'+this.isShow)
+      },
+      getAllComments(postId){
+        getComments(postId).then((response)=>{
+          this.comments = response;
+        })
+      },
+      replyPost(type,postId,rootId,toCommentId,content){
+        const userInfo = localStorage.getItem("userInfo")
+        const userId = JSON.parse(userInfo).userId
+        sendComment(null,postId,rootId,toCommentId,content,userId).then(
+          (response)=>{
+            this.getAllComments(postId)
+          }
+        );
+      },
+    sendMsg(){
+      const senderId = JSON.parse(localStorage.getItem("userInfo")).userId;
+      this.socket = new WebSocket("ws://localhost:7777/websocketendpoint?senderId="+senderId);
 
+      this.socket.addEventListener('open', (event) => {
+        console.log('已连接到WebSocket服务器');
+        // 发送消息
+        const msg = {
+          senderId:senderId,
+          receiverId:this.receiverId,
+          msg:this.msgInput
+        }
+
+        console.log(msg)
+        this.historyMsg.push(msg)
+        this.socket.send(JSON.stringify(msg));
+      });
+
+      this.socket.addEventListener('message', (event) => {
+        // console.log(`收到服务器消息: ${event.data}`);
+        const msg = JSON.parse(event.data)
+        console.log(msg)
+        // 为了演示，这里不关闭连接
+        this.historyMsg.push(msg);
+
+      });
+
+      this.socket.addEventListener('close', (event) => {
+        console.log('与服务器的连接已关闭');
+      });
+
+      this.socket.addEventListener('error', (error) => {
+        console.error('发生错误:', error);
+      });
+
+      this.$message({
+        message: '消息发送成功',
+        type: 'success'
+      });
     },
-    created(){
-        this.getPostDetail()
-    }
+    downLoadFile(preSignedUrl){
+      const filename = new URL(preSignedUrl).pathname.split('/').pop();
+      const extension = filename.split('.').pop();
+      fetch(preSignedUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.blob();
+        })
+        .then(blob => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = filename;
+          a.click();
+          window.URL.revokeObjectURL(url);
+        })
+        .catch(error => console.error('Error downloading file:', error));
+    },
+    isShowMessage(receiverId){
+        this.isSendMessage = !this.isSendMessage;
+        this.receiverId = receiverId;
+        getUserInfo(receiverId).then((response)=>{
+          this.receiverInfo = response
+        })
+    },
+
+  },
+  components:{
+
+  },
+  created(){
+    this.getPostDetail();
+    const userInfo = localStorage.getItem("userInfo")
+    this.senderInfo = JSON.parse(userInfo)
+    this.senderId = JSON.parse(userInfo).userId
+  },
+  mounted() {
+      this.getPostDetail()
+  }
 }
 </script>
 
 <style>
+.file:hover{
+  color: skyblue;
+  cursor: pointer;
+}
+.fa-times-circle{
+  position: absolute;
+  top: 0;
+  left: 76%;
+  font-size: 20px;
+  color: black;
+}
+.el-icon-document:hover{
+  color: skyblue;
+}
+.el-icon-document{
+  font-size: 20px;
+}
+.file-name:hover{
+  color: skyblue;
+}
 .like{
   color: red;
 }
@@ -150,6 +322,20 @@ export default {
     z-index: 1000;
     box-shadow: 0px 0px 5px 1px black;
     overflow:auto;
+}
+.floatMsg{
+  position:fixed;
+  top: 50%;
+  left: 50%;
+  background: rgb(255,255,255);
+  border-radius: 20px;
+  width: 50%;
+  height: 100%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0px 0px 5px 1px black;
+  overflow:auto;
 }
 .outbox{
     top: 0;
@@ -237,7 +423,7 @@ export default {
     border-radius: 50%;
     box-shadow: 0px 0px 10px 1px deepskyblue;
     position: absolute;
-    left: 70px;
+    left: 10px;
 }
 .title{
     font-weight: bold;
@@ -281,4 +467,95 @@ export default {
     margin: 10px;
 }
 
+.sendMsg-title {
+  position: absolute;
+  font-size: 18px;
+  font-weight: bold;
+  height: 25px;
+  left: 10px;
+  top:10px
+}
+
+.sendMsg-to {
+  position: absolute;
+  top: 50px;
+  left: 10px;
+}
+
+.sendMsg-content {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+}
+
+.sendMsg-cancel {
+  position: absolute;
+  bottom: 10px;
+  right: 100px;
+}
+
+.sendMsg-send {
+  position: absolute;
+  bottom: 10px;
+  right: 30px;
+}
+
+.sendMsg-input {
+  position: absolute;
+  top: 80px;
+  left: 50px;
+  width: 300px;
+  height: 150px;
+}
+
+.sendMsg-name {
+  position: absolute;
+  top: 50px;
+  left: 50px;
+}
+
+.historyMsg-i {
+  top: 140px;
+  position: absolute;
+  right: 60px;
+}
+.historyMsg-else{
+  left: 60px;
+  top: 140px;
+  position: absolute;
+}
+
+.historyMsg-topic {
+  position: relative;
+  top: 120px;
+  font-size: 16px;
+  height: 30px;
+  background-color: darkgrey;
+}
+
+.historyMsg-each {
+  position: relative;
+  height: 50px;
+}
+
+.pictInDetail-left {
+  top: 130px;
+  width: 40px;
+  display: inline;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0px 0px 10px 1px deepskyblue;
+  position: absolute;
+  left: 10px;
+}
+.pictInDetail-right {
+  top: 130px;
+  width: 40px;
+  display: inline;
+  height: 40px;
+  border-radius: 50%;
+  box-shadow: 0px 0px 10px 1px deepskyblue;
+  position: absolute;
+  right: 10px;
+}
 </style>

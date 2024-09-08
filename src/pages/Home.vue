@@ -2,17 +2,17 @@
 <template>
 
     <div>
-        
-        
-        <sg-navbar></sg-navbar>
+
+
+        <ky-header></ky-header>
         <div class="container">
             <el-row  :gutter="30">
                 <el-col :sm="24" :md="16" style="transition:all .5s ease-out;margin-bottom:30px;">
-                    <sg-post></sg-post>
+                    <ky-post></ky-post>
                     <sg-articlelist></sg-articlelist>
                 </el-col>
                 <el-col :sm="24"  :md="8" >
-                    <sg-rightlist></sg-rightlist>
+                    <ky-rightlist></ky-rightlist>
                 </el-col>
             </el-row>
         </div>
@@ -35,10 +35,10 @@ import postDeatil from '../components/postDetail.vue'
 
         },
         components: { //定义组件
-            'sg-navbar':header,
+            'ky-header':header,
             'sg-articlelist':articlelist,
-            'sg-rightlist':rightlist,
-            'sg-post':postDeatil
+            'ky-rightlist':rightlist,
+            'ky-post':postDeatil
         },
         created() { //生命周期函数
 
